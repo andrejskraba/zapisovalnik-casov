@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<!--
+The MIT License (MIT)
+
+Copyright (c) 2018 Andrej Škraba
+Univerza v Mariboru | Fakulteta za organizacijske vede vede
+Laboratorij za kibernetiko in sisteme za podporo odločanju
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-->
+
+<html>
+<head>
+<title>Zapisovalnik časov</title>
+
+<style type="text/css">
+#parent 
+{width:100%;
+font-family:Courier;
+}
+.left
+{
+float:left;
+width:6%;
+}
+.right
+{
+float:left;
+width:59%;
+}
+.izpisRazred
+{
+float:left;
+width:100%;
+}
+stil1 {
+color:D17A7A;
+font-weight:bold;
+font-family:Courier;
+}
+stil2 {
+float:left
+color:D17A7A;
+font-weight:bold;
+font-family:Courier;
+}
+</style>
+
+<style>
+		
+		body { font-family: courier; font-size: 12px; }
+		
+		#clr {
+			clear: both;
+		}
+		
+		.izpis {
+			float: left;
+			margin-left: 5px;
+		}
+		
+		table
+		{
+			border-collapse:collapse;
+		}
+
+		table,th,td
+		{
+			border: 1px dashed black;
+		}
+</style>
+
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script> -->
+<script src="jquery.js"></script>
+
+
+</head>
+
+<stil1> 
+<p>Zapisovalnik časov -> pritisni tipko Enter za zapis</p>
+
+		<div id="izpis2" class="izpis">
+		
+		<form name = "forma">
+
+<div id="izpis3" class="izpis">
+<table style="border: 1px solid black;">
+			
+
+          	<tr><td>Pritisni Enter (+opis): </td> <td> <input type = "text" size="70" id = "stevilka" value = ""  onkeypress="searchKeyPress(event);" /> </td> </tr>
+          	<tr><td>Števec: </td> <td><input type="text" id="stevecPrikaz" value ="0" /></td> </tr>
+          	<tr><td>Čas: </td> <td><input type="text" id="txt" /></td> </tr>
+          	<tr><td>Ure </td> <td> <input type ="text" id = "ure" value = "0"/> </td> </tr>
+          	<tr><td>Minute: </td> <td> <input type ="text" id = "minute" value = "0"/> </td> </tr>
+          	<tr><td>Sekunde: </td> <td> <input type ="text" id = "sekunde" value = "0"/> </td> </tr>
+          	<tr><td>Milisekunde: </td> <td> <input type ="text" id = "stotinke" value = "0"/> </td> </tr>
+          	<tr><td>Izberi tab.: </td> <td> <input type="button" value="Izberi tab." onclick="selectElementContents( document.getElementById('tabela') );"> -> Ctrl+C</td> </tr>
+          	
+          	
+</table>
+</div>
+
+</div>
+
+</form>
+<div id="clr"></div>
+
+<div class="right">
+<p></p>
+<stil1>Tabela časov -></stil1>
+</div>
+
+<div id="clr"></div>
+		<div id="izpis" class="izpis">
+		<table id="tabela">
+		<col style="width: 10%"/>
+        <col style="width: 10%"/>
+        <col style="width: 10%"/>
+        <col style="width: 10%"/>
+        <col style="width: 10%"/>
+        <col style="width: 10%"/>
+			<thead>
+				<tr><th>Zaporedna številka</th><th>Ura</th><th>Minuta</th><th>Sekunda</th><th>Milisekunda</th><th>Opis</th></tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+		</div>
+		<div id="clr"></div>
+<div id="matrika"></div>
+
+<div class="right">
+<stil1><- Konec tabele časov</stil1>
+</div>
+
+<script type = "text/javascript">
+
+var t; // spremenljivka za Timer
+var stevecCasaRelativni = 0;
+var stevecCasaKumulativni = 0;
+var stevecPrizgan = 0;
+var stevecNapakKumulativno = 0;
+var stevecNapakRelativno = 0;
+var stevecPravilnih = 0;
+var polje1=new Array(); // polje za prvi operand
+var polje2=new Array(); // polje za drugi operand
+var stevecPolja = 0;
+var steviloResenihRacunov = 0; 
+var index=new Array(); // polje za index v tabeli množenja
+var indexShuffle = Array(); // polje za naključni index
+var stevecInicializacija = 0;
+var poljeA=new Array(); // drugo polje za prvi operand
+var poljeB=new Array(); // drugo polje za drugi operand
+
+//+ Jonas Raoni Soares Silva
+//@ http://jsfromhell.com/array/shuffle [v1.0]
+
+shuffle = function(o){ //v1.0
+	for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+	return o;
+};
+
+for(i = 0; i < 121; i = i + 1) { // prvi del za inicializacijo tabele za množenje
+	poljeA[i] = i % 11;
+
+	poljeB[i] = stevecInicializacija;
+	
+	if (i % 11 == 10) {
+		stevecInicializacija = stevecInicializacija + 1;
+	}		
+	
+	index[i] = i;
+
+}
+
+indexShuffle = shuffle(index); // naključni index, da pobiramo iz dveh vektorjev za množenje
+
+for(i = 0; i < 121; i = i + 1) { // inicializacija naključne tabele za množenje
+	polje1[i] = poljeA[indexShuffle[i]];
+
+	polje2[i] = poljeB[indexShuffle[i]];
+
+}
+
+function casovnoStetje()
+{
+	
+	var now = new Date(), // current date
+    time = now.getHours() + ':' + now.getMinutes() + ":" + + now.getSeconds();	
+	
+	
+document.getElementById('txt').value=time; //stevecCasaRelativni/100;
+stevecCasaRelativni=stevecCasaRelativni+1;
+stevecCasaKumulativni=stevecCasaKumulativni+1;
+t=setTimeout("casovnoStetje()",1000);
+}
+
+function stejCas()
+{
+if (!stevecPrizgan)
+  {
+	stevecPrizgan=1;
+  casovnoStetje();
+  }
+}
+
+function stopCount()
+{
+clearTimeout(t);
+stevecPrizgan=0;
+}
+
+function selectElementContents(el) {
+    var body = document.body, range, sel;
+    if (document.createRange && window.getSelection) {
+        range = document.createRange();
+        sel = window.getSelection();
+        sel.removeAllRanges();
+        try {
+            range.selectNodeContents(el);
+            sel.addRange(range);
+        } catch (e) {
+            range.selectNode(el);
+            sel.addRange(range);
+        }
+    } else if (body.createTextRange) {
+        range = body.createTextRange();
+        range.moveToElementText(el);
+        range.select();
+    }
+}
+
+
+
+
+
+function searchKeyPress(e) // funkcija, ki omogoďż˝i, da ob pritisku na gumb Enter izvedemo funkcijo
+{
+    // look for window.event in case event isn't passed in
+    if (typeof e == 'undefined' && window.event) { e = window.event; }
+    if (e.keyCode == 13)
+    {
+        //if (document.getElementById("stevilka").value == polje1[stevecPolja]*polje2[stevecPolja]) {
+        	steviloResenihRacunov = steviloResenihRacunov + 1;
+        	
+        	stevecPolja = stevecPolja + 1; // poveďż˝amo ďż˝tevec polja za 1 kar pomeni, nov indeks za vrednosti
+        	stevecPravilnih = stevecPravilnih + 1;
+        	//document.getElementById("stevecPravilnih").value = stevecPravilnih;
+        	//elem = document.getElementById('racun');
+        	//elem.innerHTML = polje1[stevecPolja] + "x" + polje2[stevecPolja] + " = ";
+        	//elem2.appendChild(polje1[stevecPolja-1] + "x" + polje2[stevecPolja-1] + " = " + polje1[stevecPolja-1]*polje2[stevecPolja-1]);
+        	//elem2.innerHTML = polje1[stevecPolja-1] + "x" + polje2[stevecPolja-1] + " = " + polje1[stevecPolja-1]*polje2[stevecPolja-1];
+        	var node=document.createElement("tr");
+        	var ure = new Date().getHours();
+        	var minute = new Date().getMinutes();
+        	var sekunde = new Date().getSeconds();
+        	var milisekunde = new Date().getMilliseconds();
+        	document.getElementById("ure").value = ure;
+        	document.getElementById("minute").value = minute;
+        	document.getElementById("sekunde").value = sekunde;
+        	document.getElementById("stotinke").value = milisekunde;
+        	//var textnode=document.createTextNode(stevecPravilnih + "|" + ure + ":" + minute + ":" + sekunde + ":" + milisekunde);
+        	//node.appendChild(textnode);
+        	//document.getElementById("izpis").appendChild(node);
+        	// stevecCasaRelativni = 0;
+        	stevecNapakRelativno = 0;
+        	document.getElementById('stevecPrikaz').value = steviloResenihRacunov;
+        	//elem3.innerHTML = steviloResenihRacunov; // + "/" + stevecNapakKumulativno;
+        //	if (steviloResenihRacunov == 121) {
+        		//alert("Konec igre, rešenih 121 računov!" + " Čas: " + stevecCasaKumulativni/100 + "s." + " Št. Napak: " + stevecNapakKumulativno);
+        	//}
+
+
+        //}
+        
+        
+        	//$("#tabela").hide(); //skrijemo tabelo, ki je "hardcoded"
+    		//$("#tabela").fadeIn(); // tabela se počasi prikaže
+    		if (document.getElementById("stevilka").value == "") {
+    			vrednost = "0";
+    		} // če je vnos prazen
+    		else
+    			{vrednost = document.getElementById("stevilka").value};
+    		$("#tabela > tbody:last").append("<tr><td>" + steviloResenihRacunov + "</td><td>" + ure + "</td><td>" + minute + "</td><td>" + sekunde  + "</td><td>" + milisekunde + "</td><td>" + vrednost + "</td></tr>");
+    		
+    			
+    			document.getElementById("stevilka").value = ""; // postavimo vnos numerične vrednosti na 0
+    		
+        
+
+        
+        
+    }
+}
+
+//elem = document.getElementById('racun');
+//elem.innerHTML = polje1[stevecPolja] + "x" + polje2[stevecPolja] + " = ";
+
+var startTime2 = new Date(); // spremenljivka za zapis začetnega časa izvedbe optimizacije
+var h=startTime2.getHours();
+var m=startTime2.getMinutes();
+var s=startTime2.getSeconds();
+var ms=startTime2.getMilliseconds();
+//document.getElementById("startTimeOut").value = h + ":" + m + ":" + s;
+
+
+
+casovnoStetje();
+
+
+
+var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-978745-1']);
+_gaq.push(['_trackPageview']);
+
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
+
+
+
+</script>
+
+
+<body>
+<body OnLoad="document.forma.stevilka.focus();"> <!-- naredimo zato, da imamo focus ob odprtju spletne strani -->
+
+<div class = "izpisRazred" id="izpis">
+</div>
+
+
+
+</body>
+
+</html>
+
